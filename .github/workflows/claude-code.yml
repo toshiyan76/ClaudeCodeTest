@@ -1,0 +1,45 @@
+name: Claude Code Workflow
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install Claude Code SDK
+        run: pip install claude-code-sdk
+
+      - name: Generate Requirements
+        id: requirements
+        run: |
+          echo "Generating requirements..."
+          claude -p "以下の要件定義書テンプレートを埋めてください。" < templates/requirements-template.md > requirements.md
+          echo "::set-output name=requirements_file::requirements.md"
+
+      - name: Generate Design
+        id: design
+        run: |
+          echo "Generating design document..."
+          claude -p "以下の設計書テンプレートを埋めてください。" < templates/design-template.md > design.md
+          echo "::set-output name=design_file::design.md"
+
+      - name: Generate Task List
+        id: tasks
+        run: |
+          echo "Generating task list..."
+          claude -p "以下のタスクリストテンプレートを埋めてください。" < templates/tasks-template.md > tasks.md
+          echo "::set-output name=tasks_file::tasks.md"
+
+      - name: Run TDD
+        run: |
+          claude -p "タスクリスト (tasks.md) を基に、TDDで実装してください。" < ${{ steps.tasks.outputs.tasks_file }}
