@@ -13,8 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    env:
-      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 
     steps:
       - name: Checkout code
@@ -32,38 +30,16 @@ jobs:
         with:
           node-version: '18'
 
-      - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code
-
-      - name: Verify Claude CLI Installation
+      - name: Install Dependencies
         run: |
-          which claude
-          claude --version
+          npm install
+          npm install -g @anthropic-ai/claude-code
 
-      - name: Generate Requirements
-        id: requirements
+      - name: Generate Documents and Implement
+        env:
+          USER_REQUEST: ${{ github.event.inputs.user_request }}
         run: |
-          echo "Generating requirements..."
-          claude -p "${{ github.event.inputs.user_request }}" < templates/requirements-template.md > requirements.md
-          echo "::set-output name=requirements_file::requirements.md"
-
-      - name: Generate Design
-        id: design
-        run: |
-          echo "Generating design document..."
-          claude -p "以下の設計書テンプレートを埋めてください。" < templates/design-template.md > design.md
-          echo "::set-output name=design_file::design.md"
-
-      - name: Generate Task List
-        id: tasks
-        run: |
-          echo "Generating task list..."
-          claude -p "以下のタスクリストテンプレートを埋めてください。" < templates/tasks-template.md > tasks.md
-          echo "::set-output name=tasks_file::tasks.md"
-
-      - name: Run TDD
-        run: |
-          claude -p "タスクリスト (tasks.md) を基に、TDDで実装してください。" < ${{ steps.tasks.outputs.tasks_file }}
+          npm run generate
       
       - name: Get commit author info
         id: author
