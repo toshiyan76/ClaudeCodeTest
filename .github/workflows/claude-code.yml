@@ -60,3 +60,17 @@ jobs:
       - name: Run TDD
         run: |
           claude -p "タスクリスト (tasks.md) を基に、TDDで実装してください。" < ${{ steps.tasks.outputs.tasks_file }}
+      
+      - name: Get commit author info
+        id: author
+        run: |
+          echo "name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+          echo "email=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
+      
+      - name: Commit and Push Changes
+        run: |
+          git config --local user.email "${{ steps.author.outputs.email }}"
+          git config --local user.name "${{ steps.author.outputs.name }}"
+          git add .
+          git commit -m "Auto-generated: Requirements, Design, Tasks, and Code" || echo "No changes to commit"
+          git push
