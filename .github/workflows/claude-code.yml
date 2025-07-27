@@ -2,6 +2,11 @@ name: Claude Code Workflow
 
 on:
   workflow_dispatch:
+    inputs:
+      user_request:
+        description: 'User Request'
+        required: true
+        default: 'Please enter your request here.'
 
 jobs:
   build:
@@ -23,7 +28,7 @@ jobs:
         id: requirements
         run: |
           echo "Generating requirements..."
-          claude -p "以下の要件定義書テンプレートを埋めてください。" < templates/requirements-template.md > requirements.md
+          claude -p "${{ github.event.inputs.user_request }}" < templates/requirements-template.md > requirements.md
           echo "::set-output name=requirements_file::requirements.md"
 
       - name: Generate Design
